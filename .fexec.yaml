@@ -1,0 +1,14 @@
+commands:
+    install:
+        command: ["go", "get"]
+    lint:
+        command:   ["golangci-lint", "run", "--no-config", "."]
+        dependencies: ["install"]
+    test:
+        command:   ["go", "test", "./..."]
+        dependencies: ["install"]
+    pre-commit:
+        dependencies: ["lint", "test"]
+    ci:
+        dependencies: ["lint", "test"]
+

@@ -12,6 +12,11 @@ import (
 	"time"
 )
 
+var (
+	errSeekNegative = errors.New("seek to negative position")
+	errSeekOverflow = errors.New("seek to position beyond file size")
+)
+
 type FallbackFS struct {
 	fs.FS
 
@@ -24,10 +29,12 @@ type EmbeddedFile struct {
 	fs.File
 	io.Seeker
 
+	name      string
 	buildTime time.Time
 	seekLock  sync.RWMutex
 	seekPtr   int64
 	content   []byte
+	size      int64
 }
 
 type EmbeddedFileInfo struct {
@@ -36,14 +43,20 @@ type EmbeddedFileInfo struct {
 	buildTime time.Time
 }
 
-func NewEmbeddedFile(f fs.File, buildTime time.Time) (*EmbeddedFile, error) {
-	ef := &EmbeddedFile{File: f, buildTime: buildTime}
+func NewEmbeddedFile(name string, f fs.File, buildTime time.Time) (*EmbeddedFile, error) {
+	ef := &EmbeddedFile{
+		File:      f,
+		name:      name,
+		buildTime: buildTime,
+	}
 
 	var err error
 	ef.content, err = io.ReadAll(f)
 	if err != nil {
 		return nil, fmt.Errorf("reading file content: %w", err)
 	}
+
+	ef.size = int64(len(ef.content))
 
 	return ef, nil
 }
@@ -75,13 +88,14 @@ func (f *EmbeddedFile) seekUnlocked(offset int64, whence int) (int64, error) {
 	case io.SeekCurrent:
 		v = f.seekPtr + offset
 	case io.SeekEnd:
-		v = int64(len(f.content)) - offset
+		v = f.size - offset
 	}
 
 	if v < 0 {
-		v = 0
-	} else if v > int64(len(f.content)) {
-		v = int64(len(f.content))
+		return 0, errSeekNegative
+	}
+	if v > f.size {
+		return 0, errSeekOverflow
 	}
 
 	f.seekPtr = v
@@ -131,7 +145,7 @@ func (f *FallbackFS) open(name string) (fs.File, error) {
 		return file, nil
 	}
 
-	ef, err := NewEmbeddedFile(file, f.buildTime)
+	ef, err := NewEmbeddedFile(name, file, f.buildTime)
 	if err != nil {
 		return nil, fmt.Errorf("wrapping embedded file: %w", err)
 	}

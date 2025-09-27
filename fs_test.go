@@ -54,21 +54,23 @@ func TestUIFS(t *testing.T) {
 		baseURL, close := getServer(t)
 		defer close()
 
-		for _, url := range []string{
-			"",                    // directory read
-			"response.txt",        // file read
-			"path/does/not/exist", // fallback to index.html
-		} {
-			url = fmt.Sprintf("%s/%s", baseURL, url)
+		for range 3 { // repeated reads
+			for _, url := range []string{
+				"",                    // directory read
+				"response.txt",        // file read
+				"path/does/not/exist", // fallback to index.html
+			} {
+				url = fmt.Sprintf("%s/%s", baseURL, url)
 
-			response, err := http.Get(url)
-			require.NoError(t, err)
+				response, err := http.Get(url)
+				require.NoError(t, err)
 
-			body, err := io.ReadAll(response.Body)
-			require.NoError(t, err)
-			require.NoError(t, response.Body.Close())
+				body, err := io.ReadAll(response.Body)
+				require.NoError(t, err)
+				require.NoError(t, response.Body.Close())
 
-			require.Equal(t, http.StatusOK, response.StatusCode, "url: %q, body:\n%s", url, body)
+				require.Equal(t, http.StatusOK, response.StatusCode, "url: %q, body:\n%s", url, body)
+			}
 		}
 
 		// ensure correct asset content

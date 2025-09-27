@@ -1,0 +1,23 @@
+{
+  "name": "go-ui-fs",
+  "dockerComposeFile": "compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "root",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "MartyBeGood.single-editor-tabs",
+        "github.vscode-github-actions"
+      ]
+    }
+  },
+  "features": {
+    "ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {},
+    "ghcr.io/devcontainers/features/go:1": {},
+    "ghcr.io/roboslone/go-framework/fexec:1": {},
+    "ghcr.io/schlich/devcontainer-features/powerlevel10k:1": {},
+    "ghcr.io/devcontainers-extra/features/fzf:1": {}
+  }
+}

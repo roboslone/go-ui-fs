@@ -1,0 +1,9 @@
+services:
+    app:
+        hostname: dc
+        command: sleep infinity
+        image: mcr.microsoft.com/devcontainers/base:debian
+        volumes:
+            - ../..:/workspaces:cached
+            - .zshrc:/root/.zshrc:cached
+            - ~/.config:/root/.config:cached
