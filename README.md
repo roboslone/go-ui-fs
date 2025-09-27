@@ -15,5 +15,5 @@ http.Handle("/", uifs.Handler(ui))
 
 // It's recommended to provide actual binary build time to improve caching.
 // If not provided, `Handler` will use call time as build time, which will cause cache invalidation on binary restart.
-http.Handle("/", uifs.Handle(ui, uifs.WithBuildTime(actualBuildTime)))
+http.Handle("/", uifs.Handler(ui, uifs.WithBuildTime(actualBuildTime)))
 ```
