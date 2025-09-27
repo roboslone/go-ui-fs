@@ -1,0 +1,34 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    workflow_dispatch: {}
+
+env:
+    GOFLAGS: -buildvcs=false
+
+jobs:
+    ci:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v2 
+              with:
+                registry: ghcr.io
+                username: ${{ github.repository_owner }}
+                password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Build devcontainer image and run tests
+              uses: devcontainers/ci@v0.3.1900000417
+              with:
+                  imageName: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-devcontainer
+                  cacheFrom: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-devcontainer
+                  push: always
+                  inheritEnv: true
+                  runCmd: fexec ci
